@@ -1,30 +1,41 @@
 #!/usr/bin/env python3
-import argparse
 import random
 import re
 
-parser = argparse.ArgumentParser()
-parser.add_argument("-r", "--roll", default="1d6")
-parser.add_argument("-d", "--detailed", action="store_true")
-args = parser.parse_args()
+def parse_roll(roll):
+    pattern = "(\d+)d(\d+)([+-]\d+)?"
+    match_obj = re.match(pattern, roll)
 
-pattern = re.compile("(\d+)d(\d+)([+-]\d+)?")
+    if match_obj is None:
+        raise ValueError(f"Invalid dice roll {roll}")
 
-match_obj = re.match(pattern, args.roll)
+    count, sides, mod = [int(x) if x is not None else 0 for x in match_obj.groups()]
+    return count, sides, mod
 
-if match_obj is None:
-    raise ValueError(f"Invalid dice roll {args.roll}")
+def roll_dice(count, sides, mod):
+    rolls = []
+    for c in range(count):
+        r = random.randint(1, sides)
+        rolls.append(r)
 
-count, sides, bonus = [int(x) if x is not None else 0 for x in match_obj.groups()]
+    total = sum(rolls) + mod
 
-rolls = []
-for c in range(count):
-    r = random.randint(1, sides)
-    rolls.append(r)
+    return rolls, total
 
-sum = sum(rolls) + bonus
+if __name__ == "__main__":
+    import argparse
 
-if args.detailed:
-    print(f"{args.roll} -> {rolls} + {bonus} = {sum}")
-else:
-    print(sum)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-r", "--roll", default="1d6")
+    parser.add_argument("-d", "--detailed", action="store_true")
+    args = parser.parse_args()
+
+    count, sides, mod = parse_roll(args.roll)
+    rolls, total = roll_dice(count, sides, mod)
+
+    if args.detailed:
+        a = min(rolls)
+        b = max(rolls)
+        print(f"{args.roll} -> {rolls} + {mod} = {total} (lowest: {a}, highest: {b})")
+    else:
+        print(total)
