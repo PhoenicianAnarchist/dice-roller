@@ -3,6 +3,7 @@ import argparse
 import math
 import random
 import re
+import sys
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-r", "--roll", default="1d6")
@@ -34,6 +35,12 @@ if match_obj is None:
 count, sides, bonus = [int(x) if x is not None else 0 for x in match_obj.groups()]
 total_p = int(math.pow(sides, count))
 digits = math.ceil(math.log10(total_p))
+
+if count == 1:
+    # print(f"Refusing to calculate permutations of a single dice roll.")
+    print(f"Range of values for {args.roll} is {1 + bonus} to {sides + bonus} with equal probability.")
+    sys.exit()
+
 print(f"{args.roll} has {total_p} permutations with ...")
 
 head = range(1, sides + 1)
